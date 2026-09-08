@@ -44,10 +44,11 @@ séances distinctes.
 Usage
 -----
     export ICS_CALENDAR_URL="https://inpass.imt-atlantique.fr/passcal/getics?login=...&check=..."
-    python3 fill_timesheet.py --week 37 --input DASSOULI_Zephyr.xlsx
+    python fill_timesheet.py --week 37 --input DASSOULI_Zephyr.xlsx
+    python fill_timesheet.py --weeks 37-42 --input DASSOULI_Zephyr.xlsx
 
     # semaine à cheval sur deux années scolaires -> lever l'ambiguïté
-    python3 fill_timesheet.py --week 36 --year 2026 --input DASSOULI_Zephyr.xlsx
+    python fill_timesheet.py --week 36 --year 2026 --input DASSOULI_Zephyr.xlsx
 """
 
 from __future__ import annotations
@@ -260,9 +261,15 @@ def fill_workbook(
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Remplit le suivi de formation xlsx pour une semaine donnée."
+        description="Remplit le suivi de formation xlsx pour une ou plusieurs semaines."
     )
-    p.add_argument("--week", type=int, required=True, help="Numéro de semaine ISO (1-53)")
+    week_group = p.add_mutually_exclusive_group(required=True)
+    week_group.add_argument("--week", type=int, help="Numéro de semaine ISO (1-53)")
+    week_group.add_argument(
+        "--weeks",
+        metavar="DEBUT-FIN",
+        help="Plage inclusive de semaines ISO, par exemple 37-42",
+    )
     p.add_argument("--year", type=int, default=None, help="Année ISO (désambiguïsation si besoin)")
     p.add_argument("--input", type=Path, required=True, help="Fichier xlsx modèle à remplir")
     p.add_argument(
@@ -277,10 +284,36 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return p
 
 
+def parse_week_range(value: str) -> tuple[int, int]:
+    """Parse une plage inclusive de semaines ISO au format ``DEBUT-FIN``."""
+    parts = value.split("-", 1)
+    if len(parts) != 2:
+        raise ValueError("La plage de semaines doit être au format DEBUT-FIN, par exemple 37-42.")
+    try:
+        first, last = (int(part) for part in parts)
+    except ValueError as exc:
+        raise ValueError("La plage de semaines doit contenir deux nombres entiers.") from exc
+    if not 1 <= first <= 53 or not 1 <= last <= 53 or first > last:
+        raise ValueError("La plage de semaines doit être comprise entre 1 et 53, dans l'ordre croissant.")
+    return first, last
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     args = _build_arg_parser().parse_args(argv)
     if args.verbose:
         logger.setLevel(logging.DEBUG)
+
+    try:
+        if args.weeks:
+            first_week, last_week = parse_week_range(args.weeks)
+            weeks = range(first_week, last_week + 1)
+            if args.output is not None:
+                raise ValueError("--output ne peut être utilisé qu'avec --week ; utilisez le nom généré pour le bulk.")
+        else:
+            weeks = [args.week]
+    except ValueError as exc:
+        logger.error("Échec: %s", exc)
+        return 1
 
     try:
         all_events = get_schedule(
@@ -290,27 +323,27 @@ def main(argv: Optional[list[str]] = None) -> int:
             force_refresh=args.force_refresh,
             since=DEFAULT_EXTRACTION_START,
         )
-        week_events, year = select_week_events(all_events, args.week, args.year)
-        sessions = merge_sessions(week_events)
     except Exception as exc:
-        logger.error("Échec: %s", exc)
+        logger.error("Échec lors de la récupération de l'EDT: %s", exc)
         return 1
 
-    output_path = args.output or args.input.with_name(f"{args.input.stem}_S{args.week:02d}.xlsx")
+    for week in weeks:
+        try:
+            week_events, year = select_week_events(all_events, week, args.year)
+            sessions = merge_sessions(week_events)
+            output_path = args.output or args.input.with_name(f"{args.input.stem}_S{week:02d}.xlsx")
+            fill_workbook(args.input, output_path, sessions, week, year)
+        except Exception as exc:
+            logger.error("Échec pour la semaine %d: %s", week, exc)
+            return 1
 
-    try:
-        fill_workbook(args.input, output_path, sessions, args.week, year)
-    except Exception as exc:
-        logger.error("Échec lors de l'écriture du classeur: %s", exc)
-        return 1
-
-    total = sum((s.formation for s in sessions), timedelta())
-    print(f"\nSemaine ISO {args.week} ({year}) : {len(sessions)} séance(s), total formation = {total}")
-    for s in sessions:
-        print(
-            f"  {s.day:%d/%m}  {s.code_ue:<10} {s.start:%H:%M}-{s.end:%H:%M}"
-            f"  pause={s.pause_minutes:>3}min  formation={s.formation}"
-        )
+        total = sum((s.formation for s in sessions), timedelta())
+        print(f"\nSemaine ISO {week} ({year}) : {len(sessions)} séance(s), total formation = {total}")
+        for s in sessions:
+            print(
+                f"  {s.day:%d/%m}  {s.code_ue:<10} {s.start:%H:%M}-{s.end:%H:%M}"
+                f"  pause={s.pause_minutes:>3}min  formation={s.formation}"
+            )
 
     return 0
 

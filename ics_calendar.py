@@ -34,11 +34,11 @@ PASSCAL pouvant contenir plusieurs années d'historique.
 Utilisation rapide
 -------------------
     export ICS_CALENDAR_URL="https://inpass.imt-atlantique.fr/passcal/getics?login=...&check=..."
-    python3 ics_calendar.py                      # résumé + répartition par code UE
-    python3 ics_calendar.py --json cours.json     # exporte les cours (5 champs) en JSON
-    python3 ics_calendar.py --next 5              # 5 prochains cours
-    python3 ics_calendar.py --since 2026-01-01    # change la période d'extraction
-    python3 ics_calendar.py --all                 # pas de filtre de date
+    python ics_calendar.py                      # résumé + répartition par code UE
+    python ics_calendar.py --json cours.json     # exporte les cours (5 champs) en JSON
+    python ics_calendar.py --next 5              # 5 prochains cours
+    python ics_calendar.py --since 2026-01-01    # change la période d'extraction
+    python ics_calendar.py --all                 # pas de filtre de date
 
 Utilisation dans un autre script Python
 -----------------------------------------
@@ -406,7 +406,8 @@ _UE_CATEGORIES: list[tuple[str, list[str], list[str]]] = [
             "NETWORK AND CRYPTOGRAPHY",
             "RESEAUX ET CRYPTOGRAPHIE",
             "RESEAU ET CRYPTOGRAPHIE",
-            "CRYPTOGRAPHIE",
+            "CRYPTOGRAPHIE"
+            "Networks",
         ],
     ),
     (
@@ -418,7 +419,8 @@ _UE_CATEGORIES: list[tuple[str, list[str], list[str]]] = [
             "GEOPOLITICS OF CYBERSECURITY",
             "GEOPOLITIQUE DE LA CYBERSECURITE",
             "DROIT DE LA CYBERSECURITE",
-            "DROIT ET GEOPOLITIQUE",
+            "DROIT ET GEOPOLITIQUE"
+            "Law",
         ],
     ),
     (

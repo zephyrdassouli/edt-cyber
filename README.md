@@ -31,7 +31,21 @@ Le lien est trouvable sur votre profil PASS dans la section "Export Agenda ICS"
 python fill_timesheet.py --week 37 --input DASSOULI_Zephyr.xlsx
 ```
 
+Pour remplir plusieurs semaines en une seule commande, utiliser `--weeks` avec
+une plage inclusive :
+
+```bash
+python fill_timesheet.py --weeks 37-42 --input DASSOULI_Zephyr.xlsx
+```
+
+Le mode bulk génère un fichier par semaine, par exemple
+`DASSOULI_Zephyr_S37.xlsx` jusqu'à `DASSOULI_Zephyr_S42.xlsx`. L'option
+`--output` ne peut être utilisée qu'avec `--week`, afin d'éviter d'écraser
+plusieurs fichiers avec un même nom.
+
 - `--week` : numéro de semaine ISO (obligatoire).
+- `--weeks` : plage inclusive de semaines ISO, au format `DEBUT-FIN` (par
+	exemple `37-42`). À utiliser à la place de `--week`.
 - `--input` : le fichier xlsx modèle (obligatoire).
 - Résultat écrit dans `DASSOULI_Zephyr_S37.xlsx` (à côté de l'input) — le fichier original n'est jamais modifié. Pour choisir un autre nom : `--output mon_fichier.xlsx`.
 - `--url` : pour passer le lien ICS directement (optionnel, sinon pris depuis la variable d'environnement).
