@@ -1,4 +1,4 @@
-# Suivi de formation — EDT IMT Atlantique → xlsx
+# Suivi de formation, EDT IMT Atlantique -> xlsx
 
 Deux scripts :
 
@@ -34,6 +34,7 @@ python fill_timesheet.py --week 37 --input DASSOULI_Zephyr.xlsx
 - `--week` : numéro de semaine ISO (obligatoire).
 - `--input` : le fichier xlsx modèle (obligatoire).
 - Résultat écrit dans `DASSOULI_Zephyr_S37.xlsx` (à côté de l'input) — le fichier original n'est jamais modifié. Pour choisir un autre nom : `--output mon_fichier.xlsx`.
+- `--url` : pour passer le lien ICS directement (optionnel, sinon pris depuis la variable d'environnement).
 
 Le script affiche un résumé des séances trouvées et de leur code UE, puis écrit :
 - `Semaine du` / `au` / `N° de semaine`
