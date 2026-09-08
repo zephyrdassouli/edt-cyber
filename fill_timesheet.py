@@ -38,6 +38,8 @@ Deux créneaux de même code mais de jours différents ne sont PAS
 fusionnés (ça n'aurait aucun sens de "fusionner" à travers plusieurs
 jours) : c'est une hypothèse de bon sens, pas une consigne explicite,
 donc à signaler si un cas réel s'avère différent.
+Une pause de 60 minutes ou plus sépare également les créneaux en deux
+séances distinctes.
 
 Usage
 -----
@@ -77,6 +79,7 @@ TIME_NUMBER_FORMAT = "h:mm"
 # indispensable pour le total J10 qui peut dépasser 24h) avec un "H"
 # littéral comme séparateur, ex: 2H30.
 DURATION_NUMBER_FORMAT = '[h]"H"mm'
+MAX_MERGED_PAUSE = timedelta(minutes=59)
 
 
 @dataclass
@@ -127,7 +130,8 @@ def merge_sessions(events: list[Event]) -> list[Session]:
             continue
         same_day = e.start.date() == group[-1].start.date()
         same_code = classify_ue(e.summary) == classify_ue(group[-1].summary)
-        if same_day and same_code:
+        pause = e.start - group[-1].end
+        if same_day and same_code and pause <= MAX_MERGED_PAUSE:
             group.append(e)
         else:
             flush(group)
