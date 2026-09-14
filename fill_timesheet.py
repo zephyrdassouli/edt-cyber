@@ -131,8 +131,9 @@ def merge_sessions(events: list[Event]) -> list[Session]:
             continue
         same_day = e.start.date() == group[-1].start.date()
         same_code = classify_ue(e.summary) == classify_ue(group[-1].summary)
+        same_room = e.location == group[-1].location
         pause = e.start - group[-1].end
-        if same_day and same_code and pause <= MAX_MERGED_PAUSE:
+        if same_day and same_code and same_room and pause <= MAX_MERGED_PAUSE:
             group.append(e)
         else:
             flush(group)
