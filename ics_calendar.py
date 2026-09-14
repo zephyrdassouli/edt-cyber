@@ -406,8 +406,9 @@ _UE_CATEGORIES: list[tuple[str, list[str], list[str]]] = [
             "NETWORK AND CRYPTOGRAPHY",
             "RESEAUX ET CRYPTOGRAPHIE",
             "RESEAU ET CRYPTOGRAPHIE",
-            "CRYPTOGRAPHIE"
+            "CRYPTOGRAPHIE",
             "Networks",
+            "Network",
         ],
     ),
     (
@@ -419,7 +420,7 @@ _UE_CATEGORIES: list[tuple[str, list[str], list[str]]] = [
             "GEOPOLITICS OF CYBERSECURITY",
             "GEOPOLITIQUE DE LA CYBERSECURITE",
             "DROIT DE LA CYBERSECURITE",
-            "DROIT ET GEOPOLITIQUE"
+            "DROIT ET GEOPOLITIQUE",
             "Law",
         ],
     ),
